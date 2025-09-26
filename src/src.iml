@@ -3,9 +3,8 @@
   <component name="AdditionalModuleElements">
     <content url="file://$MODULE_DIR$" dumb="true">
       <sourceFolder url="file://$MODULE_DIR$/src/test/java" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/main/java" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$" isTestSource="true" />
-      <excludeFolder url="file://$MODULE_DIR$/main/java/sos" />
+      <sourceFolder url="file://$MODULE_DIR$/main/java" isTestSource="false" generated="true" />
+      <sourceFolder url="file://$MODULE_DIR$" isTestSource="false" generated="true" />
       <excludeFolder url="file://$MODULE_DIR$/test/java" />
     </content>
   </component>

@@ -12,13 +12,11 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;           
 import javax.swing.JPanel;
 
-import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
-import javax.swing.JRadioButton;
 import javax.swing.JButton;
 
 
-
+// ignroe this code mostly for now will gut it when needed for later implmentation as of now just swtiching for a mian gui then this will be the actual game baords for each mode
 public class SimpleGUI extends JPanel {
     
     // Draw the game board
