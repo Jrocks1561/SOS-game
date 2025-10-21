@@ -1,36 +1,124 @@
 package sos.screens;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
-///just a filler class for the game screen not done yet.
 public class GameScreen extends JFrame {
-    private final int boardSize;
+
+    private final int size;
     private final String mode;
 
-    public GameScreen(int boardSize, String mode) {
-        this.boardSize = boardSize;
+    public GameScreen(int size, String mode) {
+        this.size = size;
         this.mode = mode;
 
-        setTitle("SOS Game — " + mode + " Mode (" + boardSize + "x" + boardSize + ")");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(600, 600);
+        setSize(800, 600);
         setLocationRelativeTo(null);
+        setLayout(new BorderLayout());
 
-        JLabel info = new JLabel("Game Screen for " + mode + " (" + boardSize + "x" + boardSize + ")", SwingConstants.CENTER);
-        info.setFont(info.getFont().deriveFont(Font.BOLD, 20f));
-        add(info, BorderLayout.CENTER);
+        // header label
+        JLabel header = new JLabel(
+            "Game Mode: " + mode + "   Board Size: " + size + " x " + size,
+            SwingConstants.CENTER
+        );
+        header.setFont(new Font("Lucida Console", Font.BOLD, 18));
+        add(header, BorderLayout.NORTH);
 
-        JButton back = new JButton("Back to Menu");
-        back.addActionListener(e -> {
-            new MainScreen().setVisible(true);
-            dispose();
-        });
-        add(back, BorderLayout.SOUTH);
+        // background 
+        JPanel background = new JPanel(new BorderLayout());
+        Color lightPink = new Color(255, 192, 203, 220);
+        background.setBackground(lightPink);
+        Color rose = new Color(245, 180, 200, 240); 
+        background.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(rose.darker(), 2),
+            BorderFactory.createEmptyBorder(15, 15, 15, 15)
+        ));
+
+
+        //Lots of help from AI ChatGPT here I couldnt center my grid and needed some help also
+        //AI suggested this way so that later on it will be easier to update score
+        // left side panel
+        JPanel leftSide= new JPanel(new GridLayout(2, 1));
+        leftSide.setOpaque(false);
+
+        JLabel PlayerOneName= new JLabel("Player 1", SwingConstants.CENTER);
+        PlayerOneName.setFont(new Font("Lucida Console", Font.BOLD, 16));
+
+        JLabel PlayerOneScore = new JLabel("Score: 0", SwingConstants.CENTER);
+        PlayerOneScore.setFont(new Font("Lucida Console", Font.PLAIN, 14));
+
+        leftSide.add(PlayerOneName);
+        leftSide.add(PlayerOneScore);
+
+        // rigth side panel
+        JPanel rightSide = new JPanel(new GridLayout(2, 1));
+        rightSide.setOpaque(false);
+
+        JLabel PlayerTwoName = new JLabel("Player 2", SwingConstants.CENTER);
+        PlayerTwoName.setFont(new Font("Lucida Console", Font.BOLD, 16));
+        JLabel p2Score = new JLabel("Score: 0", SwingConstants.CENTER);
+        p2Score.setFont(new Font("Lucida Console", Font.PLAIN, 14));
+        rightSide.add(PlayerTwoName);
+        rightSide.add(p2Score);
+
+        // game board
+        JPanel gridPanel = new JPanel(new GridLayout(size, size, 1, 1));
+
+        // backgorund for border
+        gridPanel.setBackground(Color.BLACK);
+        gridPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 4));
+
+        // need to add listeners later
+        for (int r = 0; r < size; r++) {
+            for (int c = 0; c < size; c++) {
+                JButton cell = new JButton("");
+                cell.setFont(new Font("Lucida Console", Font.BOLD, 16));
+                // adjust cell sizes
+                cell.setPreferredSize(new Dimension(50, 50)); 
+                cell.setBackground(Color.WHITE);
+                cell.setOpaque(true);
+                cell.setContentAreaFilled(true);
+                cell.setFocusPainted(false);
+                cell.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
+                gridPanel.add(cell);
+            }
+        }
+
+        
+        JPanel centerWrapper = new JPanel(new GridBagLayout());
+        centerWrapper.setOpaque(false);
+        centerWrapper.add(gridPanel);
+        background.add(leftSide, BorderLayout.WEST);
+        background.add(rightSide, BorderLayout.EAST);
+        background.add(centerWrapper, BorderLayout.CENTER);
+        add(background, BorderLayout.CENTER);
+
+        // Turn Lable
+        JLabel turnLabel = new JLabel("Player 1 Make your Move!", SwingConstants.CENTER);
+        turnLabel.setFont(new Font("Lucida Console", Font.BOLD, 14));
+        turnLabel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+        add(turnLabel, BorderLayout.SOUTH);
+
+        setVisible(true);
+    }
+
+    public int getsize() {
+        return size;
+    }
+
+    public String getmode() {
+        return mode;
     }
 }

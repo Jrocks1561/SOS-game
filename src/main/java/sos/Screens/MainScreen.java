@@ -3,13 +3,11 @@ package sos.screens;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.LinearGradientPaint;
 
+import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -21,24 +19,29 @@ import javax.swing.SwingConstants;
 
 public class MainScreen extends JFrame {
     public MainScreen() {
-        setTitle("SOS Main Menu");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(500, 400);
         setLocationRelativeTo(null);
 
-        // Use gradient panel instead of plain JPanel
-        JPanel mainPanel = new GradientPanel();
-        mainPanel.setLayout(new BorderLayout());
+        // Solid pink background
+        JPanel mainBacPanel = new JPanel(new BorderLayout());
+        Color lightPink = new Color(255, 192, 203, 220);  
+        Color rose = new Color(245, 180, 200, 240);  
+        mainBacPanel.setBackground(lightPink);
+        mainBacPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(rose.darker(), 2),
+                BorderFactory.createEmptyBorder(15, 15, 15, 15)
+        ));
 
         // Title
-        JLabel title = new JLabel("Welcome To The Best SOS Game ==D", SwingConstants.CENTER);
-        title.setForeground(new Color(40, 40, 45));
-        title.setFont(title.getFont().deriveFont(Font.BOLD, 28f));
-        mainPanel.add(title, BorderLayout.NORTH);
+        JLabel welcome = new JLabel("Welcome To The Best SOS Game!!", SwingConstants.CENTER);
+        welcome.setForeground(new Color(40, 40, 45));
+        welcome.setFont(new Font("Lucida Console", Font.BOLD, 28));
+        mainBacPanel.add(welcome, BorderLayout.NORTH);
 
-        // Options panel
-        JPanel optionsPanel = new JPanel(new GridBagLayout());
-        optionsPanel.setOpaque(false);
+        // Options
+        JPanel options = new JPanel(new GridBagLayout());
+        options.setOpaque(false);
         GridBagConstraints gc = new GridBagConstraints();
         gc.insets = new Insets(10, 10, 10, 10);
         gc.anchor = GridBagConstraints.WEST;
@@ -48,51 +51,60 @@ public class MainScreen extends JFrame {
         gc.gridy = 0;
         JLabel sizeLabel = new JLabel("Board Size:");
         sizeLabel.setForeground(new Color(40, 40, 45));
-        optionsPanel.add(sizeLabel, gc);
+        sizeLabel.setFont(new Font("Lucida Console", Font.PLAIN, 14));
+        options.add(sizeLabel, gc);
 
         gc.gridx = 1;
-        String[] sizes = {"Small (4x4)", "Medium (9x9)", "Large (16x16)"};
-        JComboBox<String> sizeCombo = new JComboBox<>(sizes);
+        String[] boardSizes = {"Small (4x4)", "Medium (9x9)", "Large (16x16)"};
+        JComboBox<String> sizeCombo = new JComboBox<>(boardSizes);
         sizeCombo.setBackground(Color.WHITE);
         sizeCombo.setForeground(Color.DARK_GRAY);
-        optionsPanel.add(sizeCombo, gc);
+        sizeCombo.setFont(new Font("Lucida Console", Font.PLAIN, 14));
+        options.add(sizeCombo, gc);
 
-        // Game Mode (move to the next row)
+        // Game Mode
         gc.gridx = 0;
-        gc.gridy = 1; 
+        gc.gridy = 1;
         JLabel modeLabel = new JLabel("Game Mode:");
         modeLabel.setForeground(new Color(40, 40, 45));
-        optionsPanel.add(modeLabel, gc);
+        modeLabel.setFont(new Font("Lucida Console", Font.PLAIN, 14));
+        options.add(modeLabel, gc);
 
         gc.gridx = 1;
         JRadioButton simpleBtn = new JRadioButton("Simple", true);
         JRadioButton generalBtn = new JRadioButton("General");
-        //this fixed my issue with transparent buttons!!
+
+        // fixed transparent button issue
+        //Chat GPT helped me with this as the buttons had other text overlapping issues
         for (JRadioButton btn : new JRadioButton[]{simpleBtn, generalBtn}) {
-        btn.setForeground(new Color(40, 40, 45));
-        btn.setBackground(new Color(245, 245, 245));
-        btn.setOpaque(true);
+            btn.setForeground(new Color(40, 40, 45));
+            btn.setBackground(new Color(245, 245, 245));
+            btn.setOpaque(true);
+            btn.setFont(new Font("Lucida Console", Font.PLAIN, 13));
         }
 
         ButtonGroup modeGroup = new ButtonGroup();
         modeGroup.add(simpleBtn);
         modeGroup.add(generalBtn);
+
         JPanel modePanel = new JPanel();
         modePanel.setOpaque(false);
         modePanel.add(simpleBtn);
         modePanel.add(generalBtn);
-        optionsPanel.add(modePanel, gc);
+        options.add(modePanel, gc);
 
-        // Start button (next row again)
+        // Start button
         gc.gridx = 0;
-        gc.gridy = 2; 
+        gc.gridy = 2;
         gc.gridwidth = 2;
         JButton startButton = new JButton("START GAME");
         startButton.setBackground(new Color(200, 200, 200));
         startButton.setForeground(Color.BLACK);
-        optionsPanel.add(startButton, gc);
+        startButton.setFont(new Font("Lucida Console", Font.BOLD, 14));
+        options.add(startButton, gc);
 
-        // TODO: Add event to open GameScreen
+        // event listener for start button
+        //Chat GPT taught me how to create an action for listeners with lambdas
         startButton.addActionListener(e -> {
             int size;
             String selected = (String) sizeCombo.getSelectedItem();
@@ -101,33 +113,11 @@ public class MainScreen extends JFrame {
             else size = 16;
 
             String mode = simpleBtn.isSelected() ? "Simple" : "General";
-
             new GameScreen(size, mode).setVisible(true);
             dispose();
         });
 
-        mainPanel.add(optionsPanel, BorderLayout.CENTER);
-        setContentPane(mainPanel);
-    }
-
-    static class GradientPanel extends JPanel {
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            Graphics2D g2 = (Graphics2D) g.create();
-            int w = getWidth(), h = getHeight();
-
-            float[] fractions = {0f, 0.4f, 1f};
-            Color[] colors = {
-                    new Color(250, 250, 250),
-                    new Color(235, 235, 235),
-                    new Color(220, 220, 220)
-            };
-
-            var lg = new LinearGradientPaint(0, 0, 0, h, fractions, colors);
-            g2.setPaint(lg);
-            g2.fillRect(0, 0, w, h);
-            g2.dispose();
-        }
+        mainBacPanel.add(options, BorderLayout.CENTER);
+        setContentPane(mainBacPanel);
     }
 }
