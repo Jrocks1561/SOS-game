@@ -14,19 +14,22 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
+import sos.game.GameManager;
+
 public class GameScreen extends JFrame {
 
     private final int size;
     private final String mode;
 
-    // whos turn
     private boolean isPlayerOneTurn = true;
-    //turn label
     private JLabel turnLabel;
+    private final GameManager game;
 
     public GameScreen(int size, String mode) {
         this.size = size;
         this.mode = mode;
+        this.game = new GameManager(size, mode);
+        this.isPlayerOneTurn = game.isPlayerOneTurn();
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(800, 600);
@@ -40,12 +43,13 @@ public class GameScreen extends JFrame {
         );
         header.setFont(new Font("Lucida Console", Font.BOLD, 18));
 
-        //new game button
+        //new game
         JButton NewButton = new JButton("NEW GAME");
         NewButton.setBackground(new Color(200, 200, 200));
         NewButton.setForeground(Color.BLACK);
         NewButton.setFont(new Font("Lucida Console", Font.BOLD, 14));
         NewButton.addActionListener(e -> {
+            // return to main screen
             dispose();
             new MainScreen().setVisible(true);
         });
@@ -94,8 +98,6 @@ public class GameScreen extends JFrame {
 
         // game board
         JPanel gridPanel = new JPanel(new GridLayout(size, size, 1, 1));
-
-        // backgorund for border
         gridPanel.setBackground(Color.BLACK);
         gridPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 4));
 
@@ -110,25 +112,31 @@ public class GameScreen extends JFrame {
                 cell.setFocusPainted(false);
                 cell.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
 
-                // 👇 add this right here
+                final int rr = r;
+                final int cc = c;
+
                 cell.addActionListener(e -> {
                     // only place once per cell
                     if (!cell.getText().isEmpty()) return;
 
-                    String playerMove = isPlayerOneTurn ? "S" : "O";
-                    cell.setText(playerMove);
+                    // delegate to logic
+                    if (game.placeMove(rr, cc)) {
+                        String playerMove = game.getCell(rr, cc); // "S" or "O"
+                        cell.setText(playerMove);
 
-                    if (playerMove.equals("S")) {
-                        cell.setForeground(Color.BLUE);
-                    } else if (playerMove.equals("O")) {
-                        cell.setForeground(Color.YELLOW);
+                        if (playerMove.equals("S")) {
+                            cell.setForeground(Color.BLUE);
+                        } else if (playerMove.equals("O")) {
+                            cell.setForeground(Color.YELLOW);
+                        }
+
+                        // switch turn
+                        isPlayerOneTurn = game.isPlayerOneTurn();
+                        // update turn 
+                        turnLabel.setText(isPlayerOneTurn
+                                ? "Player 1 Make your Move!"
+                                : "Player 2 Make your Move!");
                     }
-                    // switch turn
-                    isPlayerOneTurn = !isPlayerOneTurn;
-                    // update turn 
-                    turnLabel.setText(isPlayerOneTurn
-                            ? "Player 1 Make your Move!"
-                            : "Player 2 Make your Move!");
                 });
 
                 gridPanel.add(cell);
@@ -152,11 +160,6 @@ public class GameScreen extends JFrame {
         setVisible(true);
     }
 
-    public int getsize() {
-        return size;
-    }
-
-    public String getmode() {
-        return mode;
-    }
+    public int getsize() { return size; }
+    public String getmode() { return mode; }
 }
