@@ -55,7 +55,7 @@ public class MainScreen extends JFrame {
         options.add(sizeLabel, gc);
 
         gc.gridx = 1;
-        String[] boardSizes = {"Small (4x4)", "Medium (9x9)", "Large (16x16)"};
+        String[] boardSizes = {"Small (4x4)", "Medium (9x9)", "Large (12x12)"};
         JComboBox<String> sizeCombo = new JComboBox<>(boardSizes);
         sizeCombo.setBackground(Color.WHITE);
         sizeCombo.setForeground(Color.DARK_GRAY);
@@ -110,7 +110,7 @@ public class MainScreen extends JFrame {
             String selected = (String) sizeCombo.getSelectedItem();
             if (selected.contains("Small")) size = 4;
             else if (selected.contains("Medium")) size = 9;
-            else size = 16;
+            else size = 12;
 
             String mode = simpleBtn.isSelected() ? "Simple" : "General";
             new GameScreen(size, mode).setVisible(true);

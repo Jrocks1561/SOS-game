@@ -19,6 +19,11 @@ public class GameScreen extends JFrame {
     private final int size;
     private final String mode;
 
+    // whos turn
+    private boolean isPlayerOneTurn = true;
+    //turn label
+    private JLabel turnLabel;
+
     public GameScreen(int size, String mode) {
         this.size = size;
         this.mode = mode;
@@ -34,7 +39,22 @@ public class GameScreen extends JFrame {
             SwingConstants.CENTER
         );
         header.setFont(new Font("Lucida Console", Font.BOLD, 18));
-        add(header, BorderLayout.NORTH);
+
+        //new game button
+        JButton NewButton = new JButton("NEW GAME");
+        NewButton.setBackground(new Color(200, 200, 200));
+        NewButton.setForeground(Color.BLACK);
+        NewButton.setFont(new Font("Lucida Console", Font.BOLD, 14));
+        NewButton.addActionListener(e -> {
+            dispose();
+            new MainScreen().setVisible(true);
+        });
+
+        JPanel topBar = new JPanel(new BorderLayout());
+        topBar.setOpaque(false);
+        topBar.add(header, BorderLayout.CENTER);
+        topBar.add(NewButton, BorderLayout.EAST);
+        add(topBar, BorderLayout.NORTH);
 
         // background 
         JPanel background = new JPanel(new BorderLayout());
@@ -45,7 +65,6 @@ public class GameScreen extends JFrame {
             BorderFactory.createLineBorder(rose.darker(), 2),
             BorderFactory.createEmptyBorder(15, 15, 15, 15)
         ));
-
 
         //Lots of help from AI ChatGPT here I couldnt center my grid and needed some help also
         //AI suggested this way so that later on it will be easier to update score
@@ -80,23 +99,42 @@ public class GameScreen extends JFrame {
         gridPanel.setBackground(Color.BLACK);
         gridPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 4));
 
-        // need to add listeners later
         for (int r = 0; r < size; r++) {
             for (int c = 0; c < size; c++) {
                 JButton cell = new JButton("");
                 cell.setFont(new Font("Lucida Console", Font.BOLD, 16));
-                // adjust cell sizes
-                cell.setPreferredSize(new Dimension(50, 50)); 
+                cell.setPreferredSize(new Dimension(50, 50));
                 cell.setBackground(Color.WHITE);
                 cell.setOpaque(true);
                 cell.setContentAreaFilled(true);
                 cell.setFocusPainted(false);
                 cell.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
+
+                // 👇 add this right here
+                cell.addActionListener(e -> {
+                    // only place once per cell
+                    if (!cell.getText().isEmpty()) return;
+
+                    String playerMove = isPlayerOneTurn ? "S" : "O";
+                    cell.setText(playerMove);
+
+                    if (playerMove.equals("S")) {
+                        cell.setForeground(Color.BLUE);
+                    } else if (playerMove.equals("O")) {
+                        cell.setForeground(Color.YELLOW);
+                    }
+                    // switch turn
+                    isPlayerOneTurn = !isPlayerOneTurn;
+                    // update turn 
+                    turnLabel.setText(isPlayerOneTurn
+                            ? "Player 1 Make your Move!"
+                            : "Player 2 Make your Move!");
+                });
+
                 gridPanel.add(cell);
             }
         }
 
-        
         JPanel centerWrapper = new JPanel(new GridBagLayout());
         centerWrapper.setOpaque(false);
         centerWrapper.add(gridPanel);
@@ -106,7 +144,7 @@ public class GameScreen extends JFrame {
         add(background, BorderLayout.CENTER);
 
         // Turn Lable
-        JLabel turnLabel = new JLabel("Player 1 Make your Move!", SwingConstants.CENTER);
+        turnLabel = new JLabel("Player 1 Make your Move!", SwingConstants.CENTER); 
         turnLabel.setFont(new Font("Lucida Console", Font.BOLD, 14));
         turnLabel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         add(turnLabel, BorderLayout.SOUTH);
