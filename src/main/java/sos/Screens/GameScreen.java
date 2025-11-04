@@ -7,12 +7,14 @@ import java.awt.Font;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 
+import javax.naming.Name;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.text.StyleContext;
 
 import sos.game.GameManager;
 
@@ -35,6 +37,7 @@ public class GameScreen extends JFrame {
         setSize(800, 600);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
+
 
         // header label
         JLabel header = new JLabel(
@@ -79,10 +82,16 @@ public class GameScreen extends JFrame {
         JLabel PlayerOneName= new JLabel("Player 1", SwingConstants.CENTER);
         PlayerOneName.setFont(new Font("Lucida Console", Font.BOLD, 16));
 
+        JLabel playerOneAssignmnet= new JLabel("S", SwingConstants.CENTER);
+        playerOneAssignmnet.setFont(new Font("Lucida Console", Font.BOLD, 20));
+        playerOneAssignmnet.setForeground(Color.BLUE);
+
+
         JLabel PlayerOneScore = new JLabel("Score: 0", SwingConstants.CENTER);
         PlayerOneScore.setFont(new Font("Lucida Console", Font.PLAIN, 14));
 
         leftSide.add(PlayerOneName);
+        leftSide.add(playerOneAssignmnet);
         leftSide.add(PlayerOneScore);
 
         // rigth side panel
@@ -91,9 +100,17 @@ public class GameScreen extends JFrame {
 
         JLabel PlayerTwoName = new JLabel("Player 2", SwingConstants.CENTER);
         PlayerTwoName.setFont(new Font("Lucida Console", Font.BOLD, 16));
+
+        JLabel playerTwoAssignmnet = new JLabel("O", SwingConstants.CENTER);
+        playerTwoAssignmnet.setFont(new Font("Lucida Console", Font.BOLD, 20));
+        playerTwoAssignmnet.setForeground(Color.yellow);
+
+
+
         JLabel p2Score = new JLabel("Score: 0", SwingConstants.CENTER);
         p2Score.setFont(new Font("Lucida Console", Font.PLAIN, 14));
         rightSide.add(PlayerTwoName);
+        rightSide.add(playerTwoAssignmnet);
         rightSide.add(p2Score);
 
         // game board
