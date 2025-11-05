@@ -1,4 +1,5 @@
 package sos.screens;
+import sos.game.*;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -25,10 +26,10 @@ public class MainScreen extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(500, 400);
         setLocationRelativeTo(null);
-        setResizable(false); // fixed size works best with absolute positioning
+        setResizable(false); 
     
 
-        // Solid pink background
+        // Solid pink background 
         JPanel mainBacPanel = new JPanel(new BorderLayout());
         Color lightPink = new Color(255, 192, 203, 220);
         Color rose = new Color(245, 180, 200, 240);
@@ -44,8 +45,8 @@ public class MainScreen extends JFrame {
         welcome.setFont(new Font("Lucida Console", Font.BOLD, 28));
         mainBacPanel.add(welcome, BorderLayout.NORTH);
 
-        // Options (absolute positioning)
-        JPanel options = new JPanel(null); // <-- absolute layout
+        // Options 
+        JPanel options = new JPanel(null); 
         options.setOpaque(false);
 
         // Board Size
@@ -75,7 +76,6 @@ public class MainScreen extends JFrame {
 
         // fixed transparent button issue
         // Chat GPT helped me with this as the buttons had other text overlapping issues
-
         for (JRadioButton btn : new JRadioButton[]{simpleBtn, generalBtn}) {
             btn.setForeground(new Color(40, 40, 45));
             btn.setBackground(new Color(245, 245, 245));
@@ -87,14 +87,13 @@ public class MainScreen extends JFrame {
         modeGroup.add(simpleBtn);
         modeGroup.add(generalBtn);
 
-        // Place radio buttons (either directly or inside a small panel — here directly)
+        // Place radio buttons directly
         simpleBtn.setBounds(160, 68, 90, 28);
         generalBtn.setBounds(255, 68, 100, 28);
         options.add(simpleBtn);
         options.add(generalBtn);
 
         // Human vs Computer
-
         JLabel ComputerLabel = new JLabel("Play Against Computer?");
         ComputerLabel.setForeground(new Color(40, 40, 45));
         ComputerLabel.setFont(new Font("Lucida Console", Font.PLAIN, 14));
@@ -103,7 +102,8 @@ public class MainScreen extends JFrame {
 
         //If computer selected create drop down computer player 1 or player 2
         JToggleButton comDropDownMenu = new JToggleButton("YES");
-        comDropDownMenu.setBounds(250, 116, 60, 28); // x,y,w,h — tweak as you like
+        comDropDownMenu.setFont(new Font("lucida console", Font.PLAIN, 14));
+        comDropDownMenu.setBounds(250, 116, 60, 28);
         options.add(comDropDownMenu);
 
         JPopupMenu comPopMenu = new JPopupMenu();
