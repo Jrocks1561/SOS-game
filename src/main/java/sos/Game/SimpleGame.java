@@ -10,19 +10,22 @@ public class SimpleGame extends Game {
 
     @Override
     public int move(Cell letter, int row, int col) {
-        //irgnore after end
-        if (over) return 0;                 
+        // ignore after end
+        if (over) return 0;
+
         int made = board.place(letter, row, col);
+
         if (made > 0) {
             over = true;
-            //who formed SOS
-            winnerIdx = current;            
-        
+            // who formed SOS
+            winnerIdx = current;
         } else {
-            swapTurn();                   
+            // no SOS, just swap turn
+            swapTurn();
         }
-        //how many made
-        return made;                       
+
+        // how many made
+        return made;
     }
 
     @Override

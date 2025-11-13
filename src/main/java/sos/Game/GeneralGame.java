@@ -1,7 +1,10 @@
 package sos.game;
 
 public class GeneralGame extends Game {
-    private final int[] score = new int[2];
+
+    private final int[] score = new int[2]; // score[0] = P1, score[1] = P2
+    private boolean over = false;
+    private Integer winnerIdx = null;      // 0, 1, or null for draw
 
     public GeneralGame(int size, Player p1, Player p2) {
         super(size, p1, p2);
@@ -9,29 +12,72 @@ public class GeneralGame extends Game {
 
     @Override
     public int move(Cell letter, int row, int col) {
+        // ignore moves after game is over
+        if (isOver()) return 0;
+
         int made = board.place(letter, row, col);
+
         if (made > 0) {
+            // add points for the current player
             score[current] += made;
+            // General SOS usually gives another turn when you score,
+            // so we DO NOT swapTurn() here
+        } else {
+            // no SOS formed: normal turn change
+            swapTurn();
         }
-        //swap turns after scoring
-        swapTurn();
+
+        // check for end-of-game when board is full
+        if (board.isFull()) {
+            over = true;
+            if (score[0] > score[1]) {
+                winnerIdx = 0;
+            } else if (score[1] > score[0]) {
+                winnerIdx = 1;
+            } else {
+                winnerIdx = null; // draw
+            }
+        }
+
         return made;
     }
 
     @Override
     public boolean isOver() {
-        return board.isFull();
+        // either we explicitly flagged over, or board is full
+        return over || board.isFull();
     }
 
     @Override
-    public String statusText() {
-        return String.format("P1: %d  P2: %d  • Turn: %s",
-                score[0], score[1], currentPlayer().name());
+public String statusText() {
+
+    // If the game is over, show final score first, then winner/draw
+    if (isOver()) {
+
+        // Format final score string
+        String finalScore = String.format("");
+
+        if (winnerIdx == null) {
+            // Draw
+            return finalScore + "Draw";
+        } else {
+            // Winner
+            return finalScore + "Winner: " + players[winnerIdx].name();
+        }
     }
 
-    public int score(int i) { return score[i]; }
+    // Game is still going — show live score + whose turn
+    return String.format("P1: %d  P2: %d  • Turn: %s",
+            score[0], score[1], currentPlayer().name());
+}
+
+
+    public int score(int i) { 
+        return score[i]; 
+    }
+
     @Override
     public String modeName() {
         return "General";
-}
+    }
 }

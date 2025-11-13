@@ -1,5 +1,4 @@
 package sos.screens;
-import sos.game.*;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -159,8 +158,6 @@ public class MainScreen extends JFrame {
                 return;
             }
 
-            // add play against human or computer button if human continue as normal
-            // if computer ask if computer player 1 or 2.
         });
 
         mainBacPanel.add(options, BorderLayout.CENTER);

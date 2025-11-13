@@ -1,13 +1,15 @@
 package sos.screens;
 
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
-import java.util.ArrayList;
-import java.util.List;
+import java.awt.Point;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -15,7 +17,9 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
+import sos.game.Board;
 import sos.game.GameManager;
 
 public class GameScreen extends JFrame {
@@ -27,12 +31,16 @@ public class GameScreen extends JFrame {
     private JLabel turnLabel;
     private final GameManager game;
 
-    // score labels as fields so we can update them
+    // score labels so we can update them
     private JLabel playerOneScoreLabel;
     private JLabel p2ScoreLabel;
 
     // board UI
     private JButton[][] cells;
+    private JPanel gridPanel;
+
+    // overlay for lines
+    private JPanel overlay;
 
     public GameScreen(int size, String mode) {
         this.size = size;
@@ -45,7 +53,7 @@ public class GameScreen extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // Header
+        // Header has mode and size info + new game button
         JLabel header = new JLabel(
             "Game Mode: " + mode + "   Board Size: " + size + " x " + size,
             SwingConstants.CENTER
@@ -56,6 +64,7 @@ public class GameScreen extends JFrame {
         newButton.setBackground(new Color(200, 200, 200));
         newButton.setForeground(Color.BLACK);
         newButton.setFont(new Font("Lucida Console", Font.BOLD, 14));
+        //if new game clicked go back to main screen
         newButton.addActionListener(e -> {
             dispose();
             new MainScreen().setVisible(true);
@@ -66,7 +75,7 @@ public class GameScreen extends JFrame {
         topBar.add(newButton, BorderLayout.EAST);
         add(topBar, BorderLayout.NORTH);
 
-        // fixed backround opaque background has bugs
+        // fixed backround on buttons as opaque background has bugs
         JPanel background = new JPanel(new BorderLayout());
         Color lightPink = new Color(255, 192, 203);
         Color rose = new Color(245, 180, 200);
@@ -123,10 +132,10 @@ public class GameScreen extends JFrame {
         rightInfo.add(p2ScoreLabel);
         rightSide.add(rightInfo, BorderLayout.CENTER);
 
-        // ===== Game board (no overlay) =====
+        // ===== Game board (no overlay) ===== 
         cells = new JButton[size][size];
 
-        JPanel gridPanel = new JPanel(new GridLayout(size, size, 1, 1));
+        gridPanel = new JPanel(new GridLayout(size, size, 1, 1));
         gridPanel.setBackground(Color.BLACK);
         gridPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 4));
 
@@ -158,7 +167,7 @@ public class GameScreen extends JFrame {
         background.add(centerWrapper, BorderLayout.CENTER);
         add(background, BorderLayout.CENTER);
 
-        // ===== Turn Label =====
+        // Turn Label 
         turnLabel = new JLabel("Player 1 Make your Move!", SwingConstants.CENTER);
         turnLabel.setFont(new Font("Lucida Console", Font.BOLD, 14));
         turnLabel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
@@ -166,6 +175,42 @@ public class GameScreen extends JFrame {
 
         // init scores
         updateScoresIfGeneral();
+
+        // ===== Overlay panel for drawing SOS lines =====
+        overlay = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setStroke(new BasicStroke(4));
+                g2.setColor(Color.RED); // single color for now
+
+                for (Board.Line line : game.getBoard().getLines()) {
+                    JButton a = cells[line.r1][line.c1];
+                    JButton b = cells[line.r2][line.c2];
+
+                    Point pa = SwingUtilities.convertPoint(
+                        a,
+                        a.getWidth() / 2,
+                        a.getHeight() / 2,
+                        this
+                    );
+
+                    Point pb = SwingUtilities.convertPoint(
+                        b,
+                        b.getWidth() / 2,
+                        b.getHeight() / 2,
+                        this
+                    );
+
+                    g2.drawLine(pa.x, pa.y, pb.x, pb.y);
+                }
+            }
+        };
+        overlay.setOpaque(false);
+        setGlassPane(overlay);
+        overlay.setVisible(true);
 
         revalidate();
         repaint();
@@ -182,7 +227,7 @@ public class GameScreen extends JFrame {
             if ("S".equals(playerMove)) cell.setForeground(Color.BLUE);
             else if ("O".equals(playerMove)) cell.setForeground(Color.YELLOW);
 
-            // whose turn next
+            // Shows whose turn next
             isPlayerOneTurn = game.isPlayerOneTurn();
             turnLabel.setText(isPlayerOneTurn
                     ? "Player 1 Make your Move!"
@@ -195,7 +240,11 @@ public class GameScreen extends JFrame {
             if (game.isOver()) {
                 turnLabel.setText("Game Over — " + game.status());
                 disableGrid(gridPanel);
+                turnLabel.setFont(new Font("Lucida Console", Font.BOLD, 16));
             }
+
+            // force redraw of lines
+            overlay.repaint();
         }
     }
 
@@ -217,4 +266,8 @@ public class GameScreen extends JFrame {
 
     public int getsize() { return size; }
     public String getmode() { return mode; }
+
+    public JLabel getPlayerOneScoreLabel() {
+        return playerOneScoreLabel;
+    }
 }

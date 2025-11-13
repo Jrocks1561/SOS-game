@@ -4,7 +4,7 @@ package sos.game;
 public abstract class Game {
     protected final Board board;
     protected final Player[] players = new Player[2];
-    protected int current = 0; // 0 ↔ 1
+    protected int current = 0; 
 
     public Game(int size, Player p1, Player p2) {
         this.board = new Board(size);
