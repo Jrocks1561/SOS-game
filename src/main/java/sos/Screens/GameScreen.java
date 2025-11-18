@@ -20,7 +20,9 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
 import sos.game.Board;
+import sos.game.Game;
 import sos.game.GameManager;
+import sos.game.Player;
 
 public class GameScreen extends JFrame {
 
@@ -176,7 +178,7 @@ public class GameScreen extends JFrame {
         // init scores
         updateScoresIfGeneral();
 
-        // ===== Overlay panel for drawing SOS lines =====
+        // ===== Overlay panel for drawing SOS lines (colored by player) =====
         overlay = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -184,9 +186,15 @@ public class GameScreen extends JFrame {
 
                 Graphics2D g2 = (Graphics2D) g;
                 g2.setStroke(new BasicStroke(4));
-                g2.setColor(Color.RED); // single color for now
 
-                for (Board.Line line : game.getBoard().getLines()) {
+                // use scored lines with their owning player
+                for (Game.ScoredLine sl : game.getScoredLines()) {
+                    Board.Line line = sl.line;
+                    Player owner = sl.player;
+
+                    // color based on the player who scored this line
+                    g2.setColor(owner.color());
+
                     JButton a = cells[line.r1][line.c1];
                     JButton b = cells[line.r2][line.c2];
 

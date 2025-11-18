@@ -1,5 +1,7 @@
 package sos.game;
 
+import java.awt.Color;
+
 public class GameManager {
     private final Game game;
 
@@ -7,8 +9,8 @@ public class GameManager {
     private int lastMade = 0;
 
     public GameManager(int size, String mode) {
-        Player p1 = Player.of("Player 1");
-        Player p2 = Player.of("Player 2");
+        Player p1 = Player.of("Player 1", Color.BLUE);
+        Player p2 = Player.of("Player 2", Color.YELLOW);
 
         if ("General".equalsIgnoreCase(mode)) {
             this.game = new GeneralGame(size, p1, p2);
@@ -76,8 +78,13 @@ public class GameManager {
         return lastMade;
     }
 
-    // let the UI access the board (for SOS line drawing)
+    // let the UI access the board (for SOS line drawing, if needed)
     public Board getBoard() {
         return game.board();
+    }
+
+    // let the UI access colored SOS lines
+    public java.util.List<Game.ScoredLine> getScoredLines() {
+        return game.getScoredLines();
     }
 }

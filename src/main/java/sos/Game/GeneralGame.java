@@ -15,11 +15,25 @@ public class GeneralGame extends Game {
         // ignore moves after game is over
         if (isOver()) return 0;
 
+        // NEW: remember how many lines existed before this move
+        int before = board.getLines().size();
+
+        // place the letter on the board (may create new SOS lines)
         int made = board.place(letter, row, col);
+
+        // how many lines after this move
+        int after = board.getLines().size();
 
         if (made > 0) {
             // add points for the current player
             score[current] += made;
+
+            // NEW: tag the newly-created lines with the current player
+            for (int i = before; i < after; i++) {
+                Board.Line ln = board.getLines().get(i);
+                scoredLines.add(new ScoredLine(ln, players[current]));
+            }
+
             // General SOS usually gives another turn when you score,
             // so we DO NOT swapTurn() here
         } else {
@@ -49,31 +63,30 @@ public class GeneralGame extends Game {
     }
 
     @Override
-public String statusText() {
+    public String statusText() {
 
-    // If the game is over, show final score first, then winner/draw
-    if (isOver()) {
+        // If the game is over, show final score first, then winner/draw
+        if (isOver()) {
 
-        // Format final score string
-        String finalScore = String.format("");
+            // Format final score string
+            String finalScore = String.format("");
 
-        if (winnerIdx == null) {
-            // Draw
-            return finalScore + "Draw";
-        } else {
-            // Winner
-            return finalScore + "Winner: " + players[winnerIdx].name();
+            if (winnerIdx == null) {
+                // Draw
+                return finalScore + "Draw";
+            } else {
+                // Winner
+                return finalScore + "Winner: " + players[winnerIdx].name();
+            }
         }
+
+        // Game is still going — show live score + whose turn
+        return String.format("P1: %d  P2: %d  • Turn: %s",
+                score[0], score[1], currentPlayer().name());
     }
 
-    // Game is still going — show live score + whose turn
-    return String.format("P1: %d  P2: %d  • Turn: %s",
-            score[0], score[1], currentPlayer().name());
-}
-
-
-    public int score(int i) { 
-        return score[i]; 
+    public int score(int i) {
+        return score[i];
     }
 
     @Override

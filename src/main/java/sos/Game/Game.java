@@ -1,10 +1,32 @@
 package sos.game;
 
+import java.util.ArrayList;
+import java.util.Collections;
+
+
 //can be use din both sos game modes
 public abstract class Game {
     protected final Board board;
     protected final Player[] players = new Player[2];
-    protected int current = 0; 
+    protected int current = 0;
+
+    // === NEW: scored SOS lines with owning player ===
+    public static final class ScoredLine {
+        public final Board.Line line;
+        public final Player player;
+
+        public ScoredLine(Board.Line line, Player player) {
+            this.line = line;
+            this.player = player;
+        }
+    }
+
+    protected final java.util.List<ScoredLine> scoredLines = new ArrayList<>();
+
+    public java.util.List<ScoredLine> getScoredLines() {
+        return Collections.unmodifiableList(scoredLines);
+    }
+    // === END NEW ===
 
     public Game(int size, Player p1, Player p2) {
         this.board = new Board(size);

@@ -133,7 +133,12 @@ public class MainScreen extends JFrame {
             isComputerPlayer = e.getActionCommand();
         });
 
-        // Start button
+        //need to add circles for easy medium hard selection radiod to the yes button 
+
+
+
+
+        //Start button
         JButton startButton = new JButton("START GAME");
         startButton.setBackground(new Color(200, 200, 200));
         startButton.setForeground(Color.BLACK);
