@@ -8,14 +8,14 @@ public class TestEasyComputerBehavior {
 
     @Test
     public void testEasyComputerChoosesNeighborOfOppositeLetter() {
-        Board board = new Board(3);
+        Board board = new Board(7);
 
         // place an O at the center
         board.place(Cell.O, 1, 1);
 
         // Easy strategy for S-player should look for empty neighbor of O
         EasyComputerPlayer cpu = new EasyComputerPlayer();
-        int[] move = cpu.chooseMove(board, 3, 0);
+        int[] move = cpu.chooseMove(board, 7, 0);
 
         assertNotNull(move, "CPU should find a move when there is an adjacent empty cell");
 
