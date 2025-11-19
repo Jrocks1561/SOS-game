@@ -10,7 +10,7 @@ public class SimpleGame extends Game {
 
     @Override
     public int move(Cell letter, int row, int col) {
-        // ignore after end
+        // ignore after end of game
         if (over) return 0;
 
         // how many SOS lines existed before this move
@@ -33,7 +33,7 @@ public class SimpleGame extends Game {
                 scoredLines.add(new ScoredLine(ln, players[current]));
             }
         } else {
-            // no SOS, just swap turn
+            // no SOS just swap turn
             swapTurn();
         }
 

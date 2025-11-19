@@ -7,7 +7,7 @@ public class TestBoardInitialization {
 
     @Test
     public void testBoardInitializesToRequestedSize() {
-        int[] sizes = {4, 9, 12};
+        int[] sizes = {7, 9, 12};
 
         for (int size : sizes) {
             GameManager simpleGame = new GameManager(size, "Simple");

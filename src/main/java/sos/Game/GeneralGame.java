@@ -2,9 +2,11 @@ package sos.game;
 
 public class GeneralGame extends Game {
 
-    private final int[] score = new int[2]; // score[0] = P1, score[1] = P2
+    // score0 = P1, score1 = P2
+    private final int[] score = new int[2];
     private boolean over = false;
-    private Integer winnerIdx = null;      // 0, 1, or null for draw
+    // 0, 1, or null for draw
+    private Integer winnerIdx = null;      
 
     public GeneralGame(int size, Player p1, Player p2) {
         super(size, p1, p2);
@@ -15,10 +17,10 @@ public class GeneralGame extends Game {
         // ignore moves after game is over
         if (isOver()) return 0;
 
-        // NEW: remember how many lines existed before this move
+        // remember how many lines existed before this move
         int before = board.getLines().size();
 
-        // place the letter on the board (may create new SOS lines)
+        // place the letter on the board 
         int made = board.place(letter, row, col);
 
         // how many lines after this move
@@ -28,20 +30,19 @@ public class GeneralGame extends Game {
             // add points for the current player
             score[current] += made;
 
-            // NEW: tag the newly-created lines with the current player
+            // record the scored lines with the player who made them
             for (int i = before; i < after; i++) {
                 Board.Line ln = board.getLines().get(i);
                 scoredLines.add(new ScoredLine(ln, players[current]));
             }
 
-            // General SOS usually gives another turn when you score,
-            // so we DO NOT swapTurn() here
+            // General SOS usually gives another turn when you score so we DO NOT swapTurn() here
         } else {
-            // no SOS formed: normal turn change
+            // no SOS formed normal turn 
             swapTurn();
         }
 
-        // check for end-of-game when board is full
+        // check who was winner when board is full
         if (board.isFull()) {
             over = true;
             if (score[0] > score[1]) {
@@ -58,7 +59,7 @@ public class GeneralGame extends Game {
 
     @Override
     public boolean isOver() {
-        // either we explicitly flagged over, or board is full
+        // either we explicitly flagged over or board is full
         return over || board.isFull();
     }
 
@@ -80,7 +81,7 @@ public class GeneralGame extends Game {
             }
         }
 
-        // Game is still going — show live score + whose turn
+        //show the live score and whose turn it is
         return String.format("P1: %d  P2: %d  • Turn: %s",
                 score[0], score[1], currentPlayer().name());
     }

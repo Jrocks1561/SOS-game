@@ -23,6 +23,7 @@ import sos.game.Board;
 import sos.game.Game;
 import sos.game.GameManager;
 import sos.game.Player;
+import sos.game.difficulty;
 
 public class GameScreen extends JFrame {
 
@@ -44,11 +45,11 @@ public class GameScreen extends JFrame {
     // overlay for lines
     private JPanel overlay;
 
-    public GameScreen(int size, String mode) {
+    // constructor knows if p1 or p2 is computer and  difficulty
+    public GameScreen(int size, String mode, boolean p1IsComputer, boolean p2IsComputer, difficulty difficulty) {
         this.size = size;
         this.mode = mode;
-        this.game = new GameManager(size, mode);
-        this.isPlayerOneTurn = game.isPlayerOneTurn();
+        this.game = new GameManager(size, mode, p1IsComputer, p2IsComputer, difficulty);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(800, 600);
@@ -77,15 +78,14 @@ public class GameScreen extends JFrame {
         topBar.add(newButton, BorderLayout.EAST);
         add(topBar, BorderLayout.NORTH);
 
-        // fixed backround on buttons as opaque background has bugs
+        // fixed background on buttons as opaque background has bugs
         JPanel background = new JPanel(new BorderLayout());
         Color lightPink = new Color(255, 192, 203);
         Color rose = new Color(245, 180, 200);
         background.setBackground(lightPink);
-        background.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(rose.darker(), 2),
-            BorderFactory.createEmptyBorder(15, 15, 15, 15)
-        ));
+        javax.swing.border.Border outerBorder = BorderFactory.createLineBorder(rose.darker(), 2);
+        javax.swing.border.Border innerBorder = BorderFactory.createEmptyBorder(15, 15, 15, 15);
+        background.setBorder(BorderFactory.createCompoundBorder(outerBorder, innerBorder));
         background.setOpaque(true);
 
         // Left side P1
@@ -134,7 +134,7 @@ public class GameScreen extends JFrame {
         rightInfo.add(p2ScoreLabel);
         rightSide.add(rightInfo, BorderLayout.CENTER);
 
-        // ===== Game board (no overlay) ===== 
+        // Game board
         cells = new JButton[size][size];
 
         gridPanel = new JPanel(new GridLayout(size, size, 1, 1));
@@ -178,7 +178,6 @@ public class GameScreen extends JFrame {
         // init scores
         updateScoresIfGeneral();
 
-        // ===== Overlay panel for drawing SOS lines (colored by player) =====
         overlay = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -223,13 +222,28 @@ public class GameScreen extends JFrame {
         revalidate();
         repaint();
         setVisible(true);
+
+        // If the computer is p1 make sure its move after the UI is shown
+        SwingUtilities.invokeLater(() -> maybeLetComputerMove(gridPanel));
+    }
+
+    // constructor human vs human and Easy by default
+    public GameScreen(int size, String mode) {
+        this(size, mode, false, false, difficulty.Easy);
     }
 
     // Handle a click on a cell
     private void onCellClicked(JPanel gridPanel, JButton cell, int rr, int cc) {
+        // block clicks if it's the computers turn 
+        boolean p1Turn = game.isPlayerOneTurn();
+        if ((p1Turn && game.isP1Computer()) || (!p1Turn && game.isP2Computer())) {
+            return;
+        }
+
         if (!cell.getText().isEmpty()) return;
         if (game.placeMove(rr, cc)) {
-            // "S" or "O"
+
+            // s or o
             String playerMove = game.getCell(rr, cc);
             cell.setText(playerMove);
             if ("S".equals(playerMove)) cell.setForeground(Color.BLUE);
@@ -249,11 +263,79 @@ public class GameScreen extends JFrame {
                 turnLabel.setText("Game Over — " + game.status());
                 disableGrid(gridPanel);
                 turnLabel.setFont(new Font("Lucida Console", Font.BOLD, 16));
+                return; // <-- important
             }
+
+            maybeLetComputerMove(gridPanel);
 
             // force redraw of lines
             overlay.repaint();
         }
+    }
+
+    private void maybeLetComputerMove(JPanel gridPanel) {
+        if (game.isOver()) return;
+
+        // Determine if it is the computer's turn
+        boolean p1Turn = game.isPlayerOneTurn();
+        boolean computerTurn = (p1Turn && game.isP1Computer()) || (!p1Turn && game.isP2Computer());
+        if (!computerTurn) return;
+
+        //Co-pilot added this in for me 
+        // Randomized single-shot timers so moves feel less robotic
+        final int minDelay = 400; 
+        final int maxDelay = 800; 
+
+        Runnable scheduleMove = new Runnable() {
+            @Override
+            public void run() {
+                if (game.isOver()) return;
+
+                int delay = java.util.concurrent.ThreadLocalRandom.current().nextInt(minDelay, maxDelay + 1);
+                javax.swing.Timer t = new javax.swing.Timer(delay, ev -> {
+                    if (game.isOver()) return;
+
+                    int[] move = game.chooseComputerMove();
+                    if (move == null) return;
+
+                    int r = move[0];
+                    int c = move[1];
+
+                    boolean placed = game.placeMove(r, c);
+                    if (!placed) return;
+
+                    // update UI
+                    JButton cell = cells[r][c];
+                    String playerMove = game.getCell(r, c);
+                    cell.setText(playerMove);
+                    if ("S".equals(playerMove)) cell.setForeground(Color.BLUE);
+                    else if ("O".equals(playerMove)) cell.setForeground(Color.YELLOW);
+
+                    boolean isP1TurnNow = game.isPlayerOneTurn();
+                    turnLabel.setText(isP1TurnNow ? "Player 1 Make your Move!" : "Player 2 Make your Move!");
+                    updateScoresIfGeneral();
+                    overlay.repaint();
+
+                    if (game.isOver()) {
+                        turnLabel.setText("Game Over — " + game.status());
+                        disableGrid(gridPanel);
+                        turnLabel.setFont(new Font("Lucida Console", Font.BOLD, 16));
+                        return;
+                    }
+
+                    // if the next turn is also a computer have another timed move
+                    boolean nextP1Turn = game.isPlayerOneTurn();
+                    boolean nextIsComputer = (nextP1Turn && game.isP1Computer()) || (!nextP1Turn && game.isP2Computer());
+                    if (nextIsComputer) {
+                        SwingUtilities.invokeLater(this);
+                    }
+                });
+                t.setRepeats(false);
+                t.start();
+            }
+        };
+
+        SwingUtilities.invokeLater(scheduleMove);
     }
 
     private void updateScoresIfGeneral() {

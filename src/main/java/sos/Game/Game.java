@@ -10,7 +10,7 @@ public abstract class Game {
     protected final Player[] players = new Player[2];
     protected int current = 0;
 
-    // === NEW: scored SOS lines with owning player ===
+    //scored SOS lines with players who scored them
     public static final class ScoredLine {
         public final Board.Line line;
         public final Player player;
@@ -26,7 +26,6 @@ public abstract class Game {
     public java.util.List<ScoredLine> getScoredLines() {
         return Collections.unmodifiableList(scoredLines);
     }
-    // === END NEW ===
 
     public Game(int size, Player p1, Player p2) {
         this.board = new Board(size);
