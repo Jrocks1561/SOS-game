@@ -9,7 +9,7 @@ public class TestFullComputerGame {
     @Test
     public void testFullComputerGameFillsBoardAndStops() {
         // Use General mode so the game continues until the board is full
-        GameManager gm = new GameManager(3, "General", true, true, difficulty.Easy);
+        GameManager gm = new GameManager(7, "General", true, true, difficulty.Easy);
 
         // Let the computer make moves until the board is full (or fail safely)
         int safety = 100;
