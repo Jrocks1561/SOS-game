@@ -1,4 +1,4 @@
-package sos.game;
+package sos.Game;
 
 import java.awt.Color;
 

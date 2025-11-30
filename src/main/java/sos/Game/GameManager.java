@@ -1,4 +1,4 @@
-package sos.game;
+package sos.Game;
 
 import java.awt.Color;
 
@@ -15,7 +15,7 @@ public class GameManager {
     private final String mode;
 
     // computer logic 
-    private final EasyComputerPlayer computerPlayer;
+    private final ComputerPlayer computerPlayer;
 
     // how many SOS lines were made by the last move
     private int lastMade = 0;
@@ -45,8 +45,8 @@ public class GameManager {
         // pick a ComputerPlayer implementation based on difficulty
         switch (selectedDifficulty) {
             case Easy -> this.computerPlayer = new EasyComputerPlayer();
-            case Medium -> this.computerPlayer = new EasyComputerPlayer();
-            case Hard -> this.computerPlayer = new EasyComputerPlayer();
+            case Medium -> this.computerPlayer = new MediumComputerPlayer();
+            case Hard -> this.computerPlayer = new HardComputerPlayer();
             default -> this.computerPlayer = new EasyComputerPlayer();
         }
     }

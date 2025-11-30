@@ -1,4 +1,4 @@
-package sos.game;
+package sos.Game;
 
 public class GeneralGame extends Game {
 

@@ -1,7 +1,7 @@
 package sos;
 
 import javax.swing.SwingUtilities;
-import sos.screens.MainScreen;
+import sos.Screens.MainScreen;
 
 public class Main {
     public static void main(String[] args) {

@@ -1,4 +1,4 @@
-package sos.screens;
+package sos.Screens;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -17,7 +17,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 
-import sos.game.difficulty;
+import sos.Game.difficulty;
 
 public class MainScreen extends JFrame {
     private boolean vrsComputer = false;

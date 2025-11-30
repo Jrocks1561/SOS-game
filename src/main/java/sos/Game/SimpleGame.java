@@ -1,4 +1,4 @@
-package sos.game;
+package sos.Game;
 
 public class SimpleGame extends Game {
     private boolean over = false;

@@ -1,4 +1,4 @@
-package sos.screens;
+package sos.Screens;
 
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
@@ -19,11 +19,11 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
-import sos.game.Board;
-import sos.game.Game;
-import sos.game.GameManager;
-import sos.game.Player;
-import sos.game.difficulty;
+import sos.Game.Board;
+import sos.Game.Game;
+import sos.Game.GameManager;
+import sos.Game.Player;
+import sos.Game.difficulty;
 
 public class GameScreen extends JFrame {
 

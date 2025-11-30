@@ -2,26 +2,32 @@ package sos.game;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
+import sos.Game.*;
 
 public class TestBoardInitialization {
 
     @Test
     public void testBoardInitializesToRequestedSize() {
-        int[] sizes = {7, 9, 12};
+        try {
+            int[] sizes = {7, 9, 12};
 
-        for (int size : sizes) {
-            GameManager simpleGame = new GameManager(size, "Simple");
-            assertEquals(size, simpleGame.getSize(), "Simple mode board size should match " + size);
-            assertEquals("Simple", simpleGame.getMode(), "Mode should be Simple");
-            checkBoardIsEmpty(simpleGame);
+            for (int size : sizes) {
+                GameManager simpleGame = new GameManager(size, "Simple");
+                assertEquals(size, simpleGame.getSize(), "Simple mode board size should match " + size);
+                assertEquals("Simple", simpleGame.getMode(), "Mode should be Simple");
+                checkBoardIsEmpty(simpleGame);
 
-            GameManager generalGame = new GameManager(size, "General");
-            assertEquals(size, generalGame.getSize(), "General mode board size should match " + size);
-            assertEquals("General", generalGame.getMode(), "Mode should be General");
-            checkBoardIsEmpty(generalGame);
+                GameManager generalGame = new GameManager(size, "General");
+                assertEquals(size, generalGame.getSize(), "General mode board size should match " + size);
+                assertEquals("General", generalGame.getMode(), "Mode should be General");
+                checkBoardIsEmpty(generalGame);
+            }
+
+            System.out.println("TestBoardInitialization: PASSED");
+        } catch (AssertionError e) {
+            System.out.println("TestBoardInitialization: FAILED - " + e.getMessage());
+            throw e;
         }
-
-        System.out.println("✅ Board initializes correctly for all sizes and modes");
     }
 
     private void checkBoardIsEmpty(GameManager game) {

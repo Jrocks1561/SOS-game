@@ -3,23 +3,31 @@ package sos.game;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
+import sos.Game.*;
 
 public class TestFullComputerGame {
 
     @Test
     public void testFullComputerGameFillsBoardAndStops() {
-        // Use General mode so the game continues until the board is full
-        GameManager gm = new GameManager(7, "General", true, true, difficulty.Easy);
+        try {
+            // Use General mode so the game continues until the board is full
+            GameManager gm = new GameManager(7, "General", true, true, difficulty.Easy);
 
-        // Let the computer make moves until the board is full (or fail safely)
-        int safety = 100;
-        while (!gm.getBoard().isFull() && safety-- > 0) {
-            int[] move = gm.chooseComputerMove();
-            if (move == null) break; // broken, stop loop
-            gm.placeMove(move[0], move[1]);
+            // Let the computer make moves until the board is full (or fail safely)
+            int safety = 100;
+            while (!gm.getBoard().isFull() && safety-- > 0) {
+                int[] move = gm.chooseComputerMove();
+                if (move == null) break; // broken, stop loop
+                gm.placeMove(move[0], move[1]);
+            }
+
+            assertTrue(gm.getBoard().isFull(), "Board should be full after repeated computer moves (or safety) ");
+            assertNull(gm.chooseComputerMove(), "No move should be returned when the board is full");
+
+            System.out.println("TestFullComputerGame: PASSED");
+        } catch (AssertionError e) {
+            System.out.println("TestFullComputerGame: FAILED - " + e.getMessage());
+            throw e;
         }
-
-        assertTrue(gm.getBoard().isFull(), "Board should be full after repeated computer moves (or safety) ");
-        assertNull(gm.chooseComputerMove(), "No move should be returned when the board is full");
     }
 }
