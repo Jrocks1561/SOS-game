@@ -10,6 +10,7 @@ import java.awt.Graphics2D;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Point;
+import java.util.List; // NEW
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -24,6 +25,8 @@ import sos.Game.Game;
 import sos.Game.GameManager;
 import sos.Game.Player;
 import sos.Game.difficulty;
+import sos.Game.gamerecorderstuff.DatabaseGameRecorder;
+import sos.Game.gamerecorderstuff.RecordedMove; // NEW
 
 public class GameScreen extends JFrame {
 
@@ -45,11 +48,13 @@ public class GameScreen extends JFrame {
     // overlay for lines
     private JPanel overlay;
 
-    // constructor knows if p1 or p2 is computer and  difficulty
     public GameScreen(int size, String mode, boolean p1IsComputer, boolean p2IsComputer, difficulty difficulty) {
         this.size = size;
         this.mode = mode;
         this.game = new GameManager(size, mode, p1IsComputer, p2IsComputer, difficulty);
+
+        // start database recording for this game
+        this.game.startRecorder(new DatabaseGameRecorder());
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(800, 600);
@@ -263,7 +268,7 @@ public class GameScreen extends JFrame {
                 turnLabel.setText("Game Over — " + game.status());
                 disableGrid(gridPanel);
                 turnLabel.setFont(new Font("Lucida Console", Font.BOLD, 16));
-                return; // <-- important
+                return;
             }
 
             maybeLetComputerMove(gridPanel);
@@ -281,7 +286,6 @@ public class GameScreen extends JFrame {
         boolean computerTurn = (p1Turn && game.isP1Computer()) || (!p1Turn && game.isP2Computer());
         if (!computerTurn) return;
 
-        //Co-pilot added this in for me 
         // Randomized single-shot timers so moves feel less robotic
         final int minDelay = 400; 
         final int maxDelay = 800; 
@@ -359,5 +363,56 @@ public class GameScreen extends JFrame {
 
     public JLabel getPlayerOneScoreLabel() {
         return playerOneScoreLabel;
+    }
+
+    // NEW: used by MainScreen's "Resume Last Game"
+    public void replayMoves(List<RecordedMove> moves) {
+        if (moves == null || moves.isEmpty()) {
+            return;
+        }
+
+        // Run on EDT to safely update UI
+        SwingUtilities.invokeLater(() -> {
+            for (RecordedMove m : moves) {
+                int r = m.getRow();   // adjust if your getter names differ
+                int c = m.getCol();   // adjust if your getter names differ
+
+                // place move in the game model
+                boolean placed = game.placeMove(r, c);
+                if (!placed) {
+                    continue;
+                }
+
+                // update the corresponding cell in the UI
+                JButton cell = cells[r][c];
+                String playerMove = game.getCell(r, c);
+                cell.setText(playerMove);
+                if ("S".equals(playerMove)) {
+                    cell.setForeground(Color.BLUE);
+                } else if ("O".equals(playerMove)) {
+                    cell.setForeground(Color.YELLOW);
+                }
+
+                // update scores as lines are formed
+                updateScoresIfGeneral();
+            }
+
+            // update turn label to whoever is next
+            boolean p1TurnNow = game.isPlayerOneTurn();
+            turnLabel.setText(p1TurnNow ? "Player 1 Make your Move!" : "Player 2 Make your Move!");
+
+            // redraw scored lines
+            overlay.repaint();
+
+            // if game already over after replay, lock the grid
+            if (game.isOver()) {
+                turnLabel.setText("Game Over — " + game.status());
+                disableGrid(gridPanel);
+                turnLabel.setFont(new Font("Lucida Console", Font.BOLD, 16));
+            } else {
+                // if next turn belongs to a computer, let it move
+                maybeLetComputerMove(gridPanel);
+            }
+        });
     }
 }

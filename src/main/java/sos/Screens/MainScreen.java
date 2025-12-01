@@ -11,13 +11,17 @@ import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButton;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 import sos.Game.difficulty;
+import sos.Game.gamerecorderstuff.DatabaseGameRecorder;
+import sos.Game.gamerecorderstuff.RecordedMove;
 
 public class MainScreen extends JFrame {
     private boolean vrsComputer = false;
@@ -31,11 +35,11 @@ public class MainScreen extends JFrame {
 
     public MainScreen() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(500, 400);
+        setSize(500, 460);
         setLocationRelativeTo(null);
         setResizable(false);
 
-        // Solid pink background 
+        // Solid pink background
         JPanel mainBacPanel = new JPanel(new BorderLayout());
         Color lightPink = new Color(255, 192, 203, 220);
         Color rose = new Color(245, 180, 200, 240);
@@ -51,9 +55,9 @@ public class MainScreen extends JFrame {
         welcome.setFont(new Font("Lucida Console", Font.BOLD, 28));
         mainBacPanel.add(welcome, BorderLayout.NORTH);
 
-        // Options 
+        // Options
         JPanel options = new JPanel(null);
-        options.setOpaque(false);
+        options.setOpaque(false); // keep pink background from mainBacPanel
 
         // Board Size
         JLabel sizeLabel = new JLabel("Board Size:");
@@ -143,11 +147,11 @@ public class MainScreen extends JFrame {
         options.add(mediumBtn);
         options.add(hardBtn);
 
-        // default has Easy selected, but difficulty s disabled
+        // default has Easy selected, but difficulty is disabled
         easyBtn.setSelected(true);
         setDifficultyEnabled(false);
 
-        // listener for drop down button 
+        // listener for drop down button
         comDropDownMenu.addItemListener(e -> {
             vrsComputer = comDropDownMenu.isSelected();
 
@@ -189,6 +193,14 @@ public class MainScreen extends JFrame {
         startButton.setBounds(85, 260, 300, 36);
         options.add(startButton);
 
+        // NEW: Resume Last Game button
+        JButton resumeButton = new JButton("RESUME LAST GAME");
+        resumeButton.setBackground(new Color(200, 200, 200));
+        resumeButton.setForeground(Color.BLACK);
+        resumeButton.setFont(new Font("Lucida Console", Font.PLAIN, 13));
+        resumeButton.setBounds(85, 300, 300, 30);
+        options.add(resumeButton);
+
         // event listener for start button
         startButton.addActionListener(e -> {
             int size;
@@ -218,7 +230,6 @@ public class MainScreen extends JFrame {
 
         // Add listener to full computer button
         fullComputerBtn.addActionListener(e -> {
-            // determine selected size and mode just like the Start button
             int fcSize;
             String selected = (String) sizeCombo.getSelectedItem();
             if (selected.contains("Small")) fcSize = 7;
@@ -227,11 +238,45 @@ public class MainScreen extends JFrame {
 
             String fcMode = simpleBtn.isSelected() ? "Simple" : "General";
 
-            // default to Easy difficulty for full computer matches
             difficulty diffEasy = difficulty.Easy;
-            // start game with both players as computer
             new GameScreen(fcSize, fcMode, true, true, diffEasy).setVisible(true);
             dispose();
+        });
+
+        // listener for resume button
+        resumeButton.addActionListener(e -> {
+            DatabaseGameRecorder db = new DatabaseGameRecorder();
+
+            int lastId = db.getLastGameId();
+            if (lastId <= 0) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "No saved games found.",
+                        "Resume Last Game",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+                return;
+            }
+
+            DatabaseGameRecorder.GameInfo info = db.loadGameInfo(lastId);
+            if (info == null) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Could not load last game info.",
+                        "Resume Last Game",
+                        JOptionPane.ERROR_MESSAGE
+                );
+                return;
+            }
+
+            java.util.List<RecordedMove> moves = db.loadGame(lastId);
+
+            GameScreen screen = new GameScreen(info.boardSize, info.mode, false, false, difficulty.Easy);
+
+            SwingUtilities.invokeLater(() -> screen.replayMoves(moves));
+
+            dispose();
+            screen.setVisible(true);
         });
 
         mainBacPanel.add(options, BorderLayout.CENTER);

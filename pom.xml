@@ -18,6 +18,13 @@
       <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
+
+    <!--PostgreSQL JDBC Driver-->
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>42.7.3</version>
+    </dependency>
   </dependencies>
 
   <build>
@@ -38,6 +45,15 @@
         <version>3.2.5</version>
         <configuration>
           <useModulePath>false</useModulePath>
+        </configuration>
+      </plugin>
+      <!-- Exec plugin to run the application with dependencies on classpath -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.1.0</version>
+        <configuration>
+          <mainClass>sos.Main</mainClass>
         </configuration>
       </plugin>
     </plugins>

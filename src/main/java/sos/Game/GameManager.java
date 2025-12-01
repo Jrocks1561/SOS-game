@@ -2,8 +2,17 @@ package sos.Game;
 
 import java.awt.Color;
 
+import sos.Game.gamerecorderstuff.DatabaseGameRecorder;
+import sos.Game.gamerecorderstuff.GameRecorder;
+
 public class GameManager {
     private final Game game;
+
+    // db record stuff
+    private GameRecorder recorder;
+
+    // track moves num 
+    private int moveNumber = 0;
 
     // board size 
     private final int size;
@@ -19,6 +28,22 @@ public class GameManager {
 
     // how many SOS lines were made by the last move
     private int lastMade = 0;
+    // In GameManager.java, inside the class, near other methods:
+
+public void applyReplayMove(int row, int col, char letterChar) {
+    if (game.isOver()) return;
+
+    Cell letter = (letterChar == 'S') ? Cell.S : Cell.O;
+
+    // Apply the move directly to the underlying game.
+    // This does NOT increment moveNumber or call the recorder.
+    try {
+        lastMade = game.move(letter, row, col);
+    } catch (IllegalStateException ex) {
+        // ignore invalid moves during replay
+    }
+}
+
 
     // main constructor used by GameScreen
     public GameManager(int size,
@@ -35,6 +60,7 @@ public class GameManager {
 
         Player p1 = Player.of(p1IsComputer ? "Computer (P1)" : "Player 1", Color.BLUE);
         Player p2 = Player.of(p2IsComputer ? "Computer (P2)" : "Player 2", Color.YELLOW);
+        
 
         if ("General".equalsIgnoreCase(mode)) {
             this.game = new GeneralGame(size, p1, p2);
@@ -57,19 +83,39 @@ public class GameManager {
     }
 
     // the move logic 
-    public boolean placeMove(int r, int c) {
-        if (game.isOver()) return false;
+public boolean placeMove(int r, int c) {
+    if (game.isOver()) return false;
 
-        try {
-            // index 0 = Player 1 (S), index 1 = Player 2 (O)
-            Cell letter = (game.currentIndex() == 0) ? Cell.S : Cell.O;
-            lastMade = game.move(letter, r, c);
-            return true;
-        } catch (IllegalStateException ex) {
-            lastMade = 0;
-            return false;
+    try {
+        // index 0 = Player 1 (S), index 1 = Player 2 (O)
+        int currentPlayerIndex = game.currentIndex();
+        Cell letter = (currentPlayerIndex == 0) ? Cell.S : Cell.O;
+
+        lastMade = game.move(letter, r, c);
+
+        // ---- DB recording logic ----
+        moveNumber++;
+        if (recorder != null) {
+            char letterChar = (letter == Cell.S) ? 'S' : 'O';
+            System.out.println("GM: recording move " + moveNumber +
+                               " for player " + currentPlayerIndex +
+                               " at (" + r + "," + c + "), letter=" + letterChar);
+            recorder.recordMove(moveNumber, r, c, letterChar, currentPlayerIndex);
+
+            if (game.isOver()) {
+                System.out.println("GM: game is over, calling recorder.endGame");
+                recorder.endGame(game.statusText());
+            }
         }
+        // ----------------------------
+
+        return true;
+    } catch (IllegalStateException ex) {
+        lastMade = 0;
+        return false;
     }
+}
+
 
     // ask the computer player to choose a move for the current turn
     public int[] chooseComputerMove() {
@@ -130,6 +176,16 @@ public class GameManager {
     // let the UI access colored SOS lines
     public java.util.List<Game.ScoredLine> getScoredLines() {
         return game.getScoredLines();
+    }
+
+    public void startRecorder(GameRecorder recorder) {
+        this.recorder = recorder;
+        moveNumber = 0;
+
+        if (this.recorder != null) {
+            System.out.println("GM: startRecorder called – starting DB game");
+            this.recorder.startGame(size, mode);
+        }
     }
 
     // getters for algorithms / UI
