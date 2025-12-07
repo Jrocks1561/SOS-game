@@ -33,13 +33,42 @@ public class MainScreen extends JFrame {
     private JRadioButton hardBtn;
     private ButtonGroup difficultyGroup;
 
+    // keep references so listeners can use them
+    private JComboBox<String> sizeCombo;
+    private JRadioButton simpleBtn;
+    private JRadioButton generalBtn;
+    private JToggleButton comDropDownMenu;
+    private JButton fullComputerBtn;
+    private JButton startButton;
+    private JButton resumeButton;
+
     public MainScreen() {
+        initFrameBasics();
+
+        // Solid pink background
+        JPanel mainBacPanel = createMainBackgroundPanel();
+
+        // Title
+        JLabel welcome = createTitleLabel();
+        mainBacPanel.add(welcome, BorderLayout.NORTH);
+
+        // Options
+        JPanel options = createOptionsPanel();
+        mainBacPanel.add(options, BorderLayout.CENTER);
+
+        setContentPane(mainBacPanel);
+    }
+
+    // frame basics
+    private void initFrameBasics() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(500, 460);
         setLocationRelativeTo(null);
         setResizable(false);
+    }
 
-        // Solid pink background
+    // Solid pink background panel with border
+    private JPanel createMainBackgroundPanel() {
         JPanel mainBacPanel = new JPanel(new BorderLayout());
         Color lightPink = new Color(255, 192, 203, 220);
         Color rose = new Color(245, 180, 200, 240);
@@ -48,18 +77,39 @@ public class MainScreen extends JFrame {
                 BorderFactory.createLineBorder(rose.darker(), 2),
                 BorderFactory.createEmptyBorder(15, 15, 15, 15)
         ));
+        return mainBacPanel;
+    }
 
-        // Title
+    // Title label
+    private JLabel createTitleLabel() {
         JLabel welcome = new JLabel("Welcome To The Best SOS Game!!", SwingConstants.CENTER);
         welcome.setForeground(new Color(40, 40, 45));
         welcome.setFont(new Font("Lucida Console", Font.BOLD, 28));
-        mainBacPanel.add(welcome, BorderLayout.NORTH);
+        return welcome;
+    }
 
-        // Options
+    // Options panel (null layout)
+    private JPanel createOptionsPanel() {
         JPanel options = new JPanel(null);
         options.setOpaque(false); // keep pink background from mainBacPanel
 
         // Board Size
+        createBoardSizeSection(options);
+
+        // Game Mode
+        createGameModeSection(options);
+
+        // Human vs Computer and difficulty
+        createComputerSection(options);
+
+        // Buttons: full computer, start, resume
+        createControlButtons(options);
+
+        return options;
+    }
+
+    // Board Size
+    private void createBoardSizeSection(JPanel options) {
         JLabel sizeLabel = new JLabel("Board Size:");
         sizeLabel.setForeground(new Color(40, 40, 45));
         sizeLabel.setFont(new Font("Lucida Console", Font.PLAIN, 14));
@@ -67,24 +117,25 @@ public class MainScreen extends JFrame {
         options.add(sizeLabel);
 
         String[] boardSizes = {"Small (7x7)", "Medium (9x9)", "Large (12x12)"};
-        JComboBox<String> sizeCombo = new JComboBox<>(boardSizes);
+        sizeCombo = new JComboBox<>(boardSizes);
         sizeCombo.setBackground(Color.WHITE);
         sizeCombo.setForeground(Color.DARK_GRAY);
         sizeCombo.setFont(new Font("Lucida Console", Font.PLAIN, 14));
         sizeCombo.setBounds(160, 18, 200, 28);
         options.add(sizeCombo);
+    }
 
-        // Game Mode
+    // Game Mode
+    private void createGameModeSection(JPanel options) {
         JLabel modeLabel = new JLabel("Game Mode:");
         modeLabel.setForeground(new Color(40, 40, 45));
         modeLabel.setFont(new Font("Lucida Console", Font.PLAIN, 14));
         modeLabel.setBounds(20, 70, 120, 24);
         options.add(modeLabel);
 
-        JRadioButton simpleBtn = new JRadioButton("Simple", true);
-        JRadioButton generalBtn = new JRadioButton("General");
+        simpleBtn = new JRadioButton("Simple", true);
+        generalBtn = new JRadioButton("General");
 
-        // fixed transparent button issue
         for (JRadioButton btn : new JRadioButton[]{simpleBtn, generalBtn}) {
             btn.setForeground(new Color(40, 40, 45));
             btn.setBackground(new Color(245, 245, 245));
@@ -96,21 +147,21 @@ public class MainScreen extends JFrame {
         modeGroup.add(simpleBtn);
         modeGroup.add(generalBtn);
 
-        // Place radio buttons directly
         simpleBtn.setBounds(160, 68, 90, 28);
         generalBtn.setBounds(255, 68, 100, 28);
         options.add(simpleBtn);
         options.add(generalBtn);
+    }
 
-        // Human vs Computer
+    // Human vs Computer and difficulty
+    private void createComputerSection(JPanel options) {
         JLabel ComputerLabel = new JLabel("Play Against Computer?");
         ComputerLabel.setForeground(new Color(40, 40, 45));
         ComputerLabel.setFont(new Font("Lucida Console", Font.PLAIN, 14));
         ComputerLabel.setBounds(20, 120, 220, 24);
         options.add(ComputerLabel);
 
-        // If computer selected create drop down computer player 1 or player 2
-        JToggleButton comDropDownMenu = new JToggleButton("YES");
+        comDropDownMenu = new JToggleButton("YES");
         comDropDownMenu.setFont(new Font("Lucida Console", Font.PLAIN, 14));
         comDropDownMenu.setBounds(250, 116, 60, 28);
         options.add(comDropDownMenu);
@@ -121,7 +172,6 @@ public class MainScreen extends JFrame {
         comPopMenu.add(Option1);
         comPopMenu.add(Option2);
 
-        // difficulty radio buttons (Easy / Medium / Hard)
         easyBtn = new JRadioButton("Easy");
         mediumBtn = new JRadioButton("Medium");
         hardBtn = new JRadioButton("Hard");
@@ -138,7 +188,6 @@ public class MainScreen extends JFrame {
         difficultyGroup.add(mediumBtn);
         difficultyGroup.add(hardBtn);
 
-        // layout them near the YES toggle
         easyBtn.setBounds(330, 116, 70, 24);
         mediumBtn.setBounds(330, 142, 90, 24);
         hardBtn.setBounds(330, 168, 80, 24);
@@ -147,11 +196,9 @@ public class MainScreen extends JFrame {
         options.add(mediumBtn);
         options.add(hardBtn);
 
-        // default has Easy selected, but difficulty is disabled
         easyBtn.setSelected(true);
         setDifficultyEnabled(false);
 
-        // listener for drop down button
         comDropDownMenu.addItemListener(e -> {
             vrsComputer = comDropDownMenu.isSelected();
 
@@ -176,32 +223,38 @@ public class MainScreen extends JFrame {
             isComputerPlayer = e.getActionCommand();
             setDifficultyEnabled(true);
         });
+    }
 
-        // Full Computer vs Computer button (default Easy) - CENTERED
-        JButton fullComputerBtn = new JButton("Full Computer vrs Computer");
+    // Full Computer vs Computer, START GAME, and RESUME LAST GAME buttons
+    private void createControlButtons(JPanel options) {
+        fullComputerBtn = new JButton("Full Computer vrs Computer");
         fullComputerBtn.setBackground(new Color(200, 200, 200));
         fullComputerBtn.setForeground(Color.BLACK);
         fullComputerBtn.setFont(new Font("Lucida Console", Font.PLAIN, 12));
         fullComputerBtn.setBounds(85, 220, 300, 30);
         options.add(fullComputerBtn);
 
-        // Start button - CENTERED
-        JButton startButton = new JButton("START GAME");
+        startButton = new JButton("START GAME");
         startButton.setBackground(new Color(200, 200, 200));
         startButton.setForeground(Color.BLACK);
         startButton.setFont(new Font("Lucida Console", Font.BOLD, 14));
         startButton.setBounds(85, 260, 300, 36);
         options.add(startButton);
 
-        // NEW: Resume Last Game button
-        JButton resumeButton = new JButton("RESUME LAST GAME");
+        resumeButton = new JButton("RESUME LAST GAME");
         resumeButton.setBackground(new Color(200, 200, 200));
         resumeButton.setForeground(Color.BLACK);
         resumeButton.setFont(new Font("Lucida Console", Font.PLAIN, 13));
         resumeButton.setBounds(85, 300, 300, 30);
         options.add(resumeButton);
 
-        // event listener for start button
+        attachStartButtonListener();
+        attachFullComputerButtonListener();
+        attachResumeButtonListener();
+    }
+
+    // event listener for start button
+    private void attachStartButtonListener() {
         startButton.addActionListener(e -> {
             int size;
             String selected = (String) sizeCombo.getSelectedItem();
@@ -211,24 +264,21 @@ public class MainScreen extends JFrame {
 
             String mode = simpleBtn.isSelected() ? "Simple" : "General";
 
-            // if playing vs computer chose P1 or P2
             if (vrsComputer && isComputerPlayer == null) {
                 return;
             }
 
-            // who is computer
             boolean p1IsComputer = "Computer Player 1".equals(isComputerPlayer);
             boolean p2IsComputer = "Computer Player 2".equals(isComputerPlayer);
 
-            // get difficulty Easy,medium,hard
             difficulty diff = getSelectedDifficulty();
 
-            // pass everything into GameScreen
             new GameScreen(size, mode, p1IsComputer, p2IsComputer, diff).setVisible(true);
             dispose();
         });
+    }
 
-        // Add listener to full computer button
+    private void attachFullComputerButtonListener() {
         fullComputerBtn.addActionListener(e -> {
             int fcSize;
             String selected = (String) sizeCombo.getSelectedItem();
@@ -242,8 +292,10 @@ public class MainScreen extends JFrame {
             new GameScreen(fcSize, fcMode, true, true, diffEasy).setVisible(true);
             dispose();
         });
+    }
 
-        // listener for resume button
+    // UPDATED RESUME BUTTON LISTENER
+    private void attachResumeButtonListener() {
         resumeButton.addActionListener(e -> {
             DatabaseGameRecorder db = new DatabaseGameRecorder();
 
@@ -262,8 +314,8 @@ public class MainScreen extends JFrame {
             if (info == null) {
                 JOptionPane.showMessageDialog(
                         this,
-                        "Could not load last game info.",
-                        "Resume Last Game",
+                        "Could not load last game.",
+                        "Resuming the last Game",
                         JOptionPane.ERROR_MESSAGE
                 );
                 return;
@@ -271,19 +323,30 @@ public class MainScreen extends JFrame {
 
             java.util.List<RecordedMove> moves = db.loadGame(lastId);
 
-            GameScreen screen = new GameScreen(info.boardSize, info.mode, false, false, difficulty.Easy);
+            // map difficultyName (stored string) back to enum
+            difficulty diff;
+            try {
+                diff = difficulty.valueOf(info.difficultyName);
+            } catch (Exception ex) {
+                diff = difficulty.Easy; // fallback if something is wrong or null
+            }
+
+            // use the stored p1/p2 computer flags and difficulty
+            GameScreen screen = new GameScreen(
+                    info.boardSize,
+                    info.mode,
+                    info.p1IsComputer,
+                    info.p2IsComputer,
+                    diff
+            );
 
             SwingUtilities.invokeLater(() -> screen.replayMoves(moves));
 
             dispose();
             screen.setVisible(true);
         });
-
-        mainBacPanel.add(options, BorderLayout.CENTER);
-        setContentPane(mainBacPanel);
     }
 
-    // which difficulty is selected in the main menu
     private difficulty getSelectedDifficulty() {
         if (easyBtn.isSelected()) {
             return difficulty.Easy;
@@ -294,7 +357,6 @@ public class MainScreen extends JFrame {
         }
     }
 
-    // helper to enable/disable difficulty radios
     private void setDifficultyEnabled(boolean enabled) {
         easyBtn.setEnabled(enabled);
         mediumBtn.setEnabled(enabled);

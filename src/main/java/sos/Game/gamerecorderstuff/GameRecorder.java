@@ -8,9 +8,9 @@ public interface GameRecorder {
     void recordMove(int moveNumber, int row, int col, char letter, int playerIndex);
 
     //called at the start of a new game
-    void startGame(int boardSize, String mode);
+    void startGame(int boardSize, String mode, boolean p1IsComputer, boolean p2IsComputer, String difficultyName);
 
-    //loads moves for a given game from the database
+    //loads moves for a game from the database
     List<RecordedMove> loadGame(int gameId);
 
     //called at the end of the game to record the result

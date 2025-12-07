@@ -10,7 +10,7 @@ import java.awt.Graphics2D;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Point;
-import java.util.List; // NEW
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -26,7 +26,9 @@ import sos.Game.GameManager;
 import sos.Game.Player;
 import sos.Game.difficulty;
 import sos.Game.gamerecorderstuff.DatabaseGameRecorder;
-import sos.Game.gamerecorderstuff.RecordedMove; // NEW
+import sos.Game.gamerecorderstuff.RecordedMove;
+
+//I know in class we tlaked about to many imports but I double chekced i didnt have any ununsed ones
 
 public class GameScreen extends JFrame {
 
@@ -56,12 +58,39 @@ public class GameScreen extends JFrame {
         // start database recording for this game
         this.game.startRecorder(new DatabaseGameRecorder());
 
+        initFrameBasics();
+        JPanel topBar = createTopBar();
+        add(topBar, BorderLayout.NORTH);
+
+        JPanel background = createBackgroundLayout();
+        add(background, BorderLayout.CENTER);
+
+        turnLabel = createTurnLabel();
+        add(turnLabel, BorderLayout.SOUTH);
+
+        createOverlay();
+        initScoresAndStartGame();
+
+        setVisible(true);
+
+        // If the computer is p1 make sure its move after the UI is shown
+        SwingUtilities.invokeLater(() -> maybeLetComputerMove(gridPanel));
+    }
+
+    // constructor human vs human and Easy by default
+    public GameScreen(int size, String mode) {
+        this(size, mode, false, false, difficulty.Easy);
+    }
+
+    //helpers
+    private void initFrameBasics() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(800, 600);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
+    }
 
-        // Header has mode and size info + new game button
+    private JPanel createTopBar() {
         JLabel header = new JLabel(
             "Game Mode: " + mode + "   Board Size: " + size + " x " + size,
             SwingConstants.CENTER
@@ -72,7 +101,7 @@ public class GameScreen extends JFrame {
         newButton.setBackground(new Color(200, 200, 200));
         newButton.setForeground(Color.BLACK);
         newButton.setFont(new Font("Lucida Console", Font.BOLD, 14));
-        //if new game clicked go back to main screen
+        // if new game clicked go back to main screen
         newButton.addActionListener(e -> {
             dispose();
             new MainScreen().setVisible(true);
@@ -81,108 +110,123 @@ public class GameScreen extends JFrame {
         JPanel topBar = new JPanel(new BorderLayout());
         topBar.add(header, BorderLayout.CENTER);
         topBar.add(newButton, BorderLayout.EAST);
-        add(topBar, BorderLayout.NORTH);
 
-        // fixed background on buttons as opaque background has bugs
-        JPanel background = new JPanel(new BorderLayout());
+        return topBar;
+    }
+
+    private JPanel createBackgroundLayout() {
         Color lightPink = new Color(255, 192, 203);
         Color rose = new Color(245, 180, 200);
+
+        JPanel background = new JPanel(new BorderLayout());
         background.setBackground(lightPink);
         javax.swing.border.Border outerBorder = BorderFactory.createLineBorder(rose.darker(), 2);
         javax.swing.border.Border innerBorder = BorderFactory.createEmptyBorder(15, 15, 15, 15);
         background.setBorder(BorderFactory.createCompoundBorder(outerBorder, innerBorder));
         background.setOpaque(true);
 
-        // Left side P1
-        JPanel leftSide = new JPanel(new BorderLayout());
-        leftSide.setOpaque(false);
-
-        JPanel leftInfo = new JPanel(new GridLayout(3, 1, 0, 10));
-        leftInfo.setOpaque(true);
-        leftInfo.setBackground(lightPink);
-
-        JLabel playerOneName = new JLabel("Player 1", SwingConstants.CENTER);
-        playerOneName.setFont(new Font("Lucida Console", Font.BOLD, 16));
-
-        JLabel playerOneAssignment = new JLabel("S", SwingConstants.CENTER);
-        playerOneAssignment.setFont(new Font("Lucida Console", Font.BOLD, 20));
-        playerOneAssignment.setForeground(Color.BLUE);
-
-        playerOneScoreLabel = new JLabel("Score: 0", SwingConstants.CENTER);
-        playerOneScoreLabel.setFont(new Font("Lucida Console", Font.PLAIN, 14));
-
-        leftInfo.add(playerOneName);
-        leftInfo.add(playerOneAssignment);
-        leftInfo.add(playerOneScoreLabel);
-        leftSide.add(leftInfo, BorderLayout.CENTER);
-
-        // Right side P2
-        JPanel rightSide = new JPanel(new BorderLayout());
-        rightSide.setOpaque(false);
-
-        JPanel rightInfo = new JPanel(new GridLayout(3, 1, 0, 10));
-        rightInfo.setOpaque(true);
-        rightInfo.setBackground(lightPink);
-
-        JLabel playerTwoName = new JLabel("Player 2", SwingConstants.CENTER);
-        playerTwoName.setFont(new Font("Lucida Console", Font.BOLD, 16));
-
-        JLabel playerTwoAssignment = new JLabel("O", SwingConstants.CENTER);
-        playerTwoAssignment.setFont(new Font("Lucida Console", Font.BOLD, 20));
-        playerTwoAssignment.setForeground(Color.YELLOW);
-
-        p2ScoreLabel = new JLabel("Score: 0", SwingConstants.CENTER);
-        p2ScoreLabel.setFont(new Font("Lucida Console", Font.PLAIN, 14));
-
-        rightInfo.add(playerTwoName);
-        rightInfo.add(playerTwoAssignment);
-        rightInfo.add(p2ScoreLabel);
-        rightSide.add(rightInfo, BorderLayout.CENTER);
-
-        // Game board
-        cells = new JButton[size][size];
-
-        gridPanel = new JPanel(new GridLayout(size, size, 1, 1));
-        gridPanel.setBackground(Color.BLACK);
-        gridPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 4));
-
-        for (int r = 0; r < size; r++) {
-            for (int c = 0; c < size; c++) {
-                JButton cell = new JButton("");
-                cell.setFont(new Font("Lucida Console", Font.BOLD, 16));
-                cell.setPreferredSize(new Dimension(50, 50));
-                cell.setBackground(Color.WHITE);
-                cell.setOpaque(true);
-                cell.setContentAreaFilled(true);
-                cell.setFocusPainted(false);
-                cell.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
-
-                final int rr = r, cc = c;
-                cell.addActionListener(e -> onCellClicked(gridPanel, cell, rr, cc));
-
-                cells[r][c] = cell;
-                gridPanel.add(cell);
-            }
-        }
-
-        JPanel centerWrapper = new JPanel(new GridBagLayout());
-        centerWrapper.setOpaque(false);
-        centerWrapper.add(gridPanel);
+        JPanel leftSide = createSidePanel(
+            "Player 1", "S", Color.BLUE, true, lightPink
+        );
+        JPanel rightSide = createSidePanel(
+            "Player 2", "O", Color.YELLOW, false, lightPink
+        );
+        gridPanel = createGridPanel();
+        JPanel centerWrapper = createCenterWrapper(gridPanel);
 
         background.add(leftSide, BorderLayout.LINE_START);
         background.add(rightSide, BorderLayout.LINE_END);
         background.add(centerWrapper, BorderLayout.CENTER);
-        add(background, BorderLayout.CENTER);
 
-        // Turn Label 
-        turnLabel = new JLabel("Player 1 Make your Move!", SwingConstants.CENTER);
-        turnLabel.setFont(new Font("Lucida Console", Font.BOLD, 14));
-        turnLabel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
-        add(turnLabel, BorderLayout.SOUTH);
+        return background;
+    }
 
-        // init scores
-        updateScoresIfGeneral();
+    private JPanel createSidePanel(String playerName,
+                                   String letter,
+                                   Color letterColor,
+                                   boolean isPlayerOne,
+                                   Color backgroundColor) {
+        JPanel side = new JPanel(new BorderLayout());
+        side.setOpaque(false);
 
+        JPanel info = new JPanel(new GridLayout(3, 1, 0, 10));
+        info.setOpaque(true);
+        info.setBackground(backgroundColor);
+
+        JLabel nameLabel = new JLabel(playerName, SwingConstants.CENTER);
+        nameLabel.setFont(new Font("Lucida Console", Font.BOLD, 16));
+
+        JLabel assignmentLabel = new JLabel(letter, SwingConstants.CENTER);
+        assignmentLabel.setFont(new Font("Lucida Console", Font.BOLD, 20));
+        assignmentLabel.setForeground(letterColor);
+
+        JLabel scoreLabel = new JLabel("Score: 0", SwingConstants.CENTER);
+        scoreLabel.setFont(new Font("Lucida Console", Font.PLAIN, 14));
+
+        if (isPlayerOne) {
+            playerOneScoreLabel = scoreLabel;
+        } else {
+            p2ScoreLabel = scoreLabel;
+        }
+
+        info.add(nameLabel);
+        info.add(assignmentLabel);
+        info.add(scoreLabel);
+        side.add(info, BorderLayout.CENTER);
+
+        return side;
+    }
+
+    private JPanel createGridPanel() {
+        JPanel panel = new JPanel(new GridLayout(size, size, 1, 1));
+        panel.setBackground(Color.BLACK);
+        panel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 4));
+
+        cells = new JButton[size][size];
+
+        for (int r = 0; r < size; r++) {
+            for (int c = 0; c < size; c++) {
+                JButton cell = createCellButton(r, c, panel);
+                cells[r][c] = cell;
+                panel.add(cell);
+            }
+        }
+
+        return panel;
+    }
+
+    private JButton createCellButton(int r, int c, JPanel gridPanel) {
+        JButton cell = new JButton("");
+        cell.setFont(new Font("Lucida Console", Font.BOLD, 16));
+        cell.setPreferredSize(new Dimension(50, 50));
+        cell.setBackground(Color.WHITE);
+        cell.setOpaque(true);
+        cell.setContentAreaFilled(true);
+        cell.setFocusPainted(false);
+        cell.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
+
+        final int rr = r;
+        final int cc = c;
+        cell.addActionListener(e -> onCellClicked(gridPanel, cell, rr, cc));
+
+        return cell;
+    }
+
+    private JPanel createCenterWrapper(JPanel gridPanel) {
+        JPanel centerWrapper = new JPanel(new GridBagLayout());
+        centerWrapper.setOpaque(false);
+        centerWrapper.add(gridPanel);
+        return centerWrapper;
+    }
+
+    private JLabel createTurnLabel() {
+        JLabel label = new JLabel("Player 1 Make your Move!", SwingConstants.CENTER);
+        label.setFont(new Font("Lucida Console", Font.BOLD, 14));
+        label.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+        return label;
+    }
+
+    private void createOverlay() {
         overlay = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -223,72 +267,79 @@ public class GameScreen extends JFrame {
         overlay.setOpaque(false);
         setGlassPane(overlay);
         overlay.setVisible(true);
+    }
 
+    private void initScoresAndStartGame() {
+        updateScoresIfGeneral();
         revalidate();
         repaint();
-        setVisible(true);
-
-        // If the computer is p1 make sure its move after the UI is shown
-        SwingUtilities.invokeLater(() -> maybeLetComputerMove(gridPanel));
     }
 
-    // constructor human vs human and Easy by default
-    public GameScreen(int size, String mode) {
-        this(size, mode, false, false, difficulty.Easy);
-    }
-
+    // Event handlers and logic
     // Handle a click on a cell
     private void onCellClicked(JPanel gridPanel, JButton cell, int rr, int cc) {
-        // block clicks if it's the computers turn 
-        boolean p1Turn = game.isPlayerOneTurn();
-        if ((p1Turn && game.isP1Computer()) || (!p1Turn && game.isP2Computer())) {
+        // block clicks if it's the computers turn
+        if (isComputerTurn()) {
             return;
         }
 
         if (!cell.getText().isEmpty()) return;
         if (game.placeMove(rr, cc)) {
-
-            // s or o
-            String playerMove = game.getCell(rr, cc);
-            cell.setText(playerMove);
-            if ("S".equals(playerMove)) cell.setForeground(Color.BLUE);
-            else if ("O".equals(playerMove)) cell.setForeground(Color.YELLOW);
-
-            // Shows whose turn next
-            isPlayerOneTurn = game.isPlayerOneTurn();
-            turnLabel.setText(isPlayerOneTurn
-                    ? "Player 1 Make your Move!"
-                    : "Player 2 Make your Move!");
-
-            // scores
-            updateScoresIfGeneral();
-
-            // end-of-game handling
-            if (game.isOver()) {
-                turnLabel.setText("Game Over — " + game.status());
-                disableGrid(gridPanel);
-                turnLabel.setFont(new Font("Lucida Console", Font.BOLD, 16));
-                return;
-            }
-
-            maybeLetComputerMove(gridPanel);
-
-            // force redraw of lines
-            overlay.repaint();
+            applyMoveToUI(rr, cc, cell);
+            handlePostMove(gridPanel);
         }
+    }
+
+    private boolean isComputerTurn() {
+        boolean p1Turn = game.isPlayerOneTurn();
+        return (p1Turn && game.isP1Computer()) || (!p1Turn && game.isP2Computer());
+    }
+
+    private void applyMoveToUI(int r, int c, JButton cell) {
+        String playerMove = game.getCell(r, c);
+        cell.setText(playerMove);
+        if ("S".equals(playerMove)) {
+            cell.setForeground(Color.BLUE);
+        } else if ("O".equals(playerMove)) {
+            cell.setForeground(Color.YELLOW);
+        }
+
+        isPlayerOneTurn = game.isPlayerOneTurn();
+        updateTurnLabel();
+        updateScoresIfGeneral();
+        overlay.repaint();
+    }
+
+    private void handlePostMove(JPanel gridPanel) {
+        if (game.isOver()) {
+            showGameOver(gridPanel);
+            return;
+         }
+
+        maybeLetComputerMove(gridPanel);
+    }
+
+    private void updateTurnLabel() {
+        turnLabel.setText(isPlayerOneTurn
+            ? "Player 1 Make your Move!"
+            : "Player 2 Make your Move!");
+    }
+
+    private void showGameOver(JPanel gridPanel) {
+        turnLabel.setText("Game Over — " + game.status());
+        disableGrid(gridPanel);
+        turnLabel.setFont(new Font("Lucida Console", Font.BOLD, 16));
     }
 
     private void maybeLetComputerMove(JPanel gridPanel) {
         if (game.isOver()) return;
 
-        // Determine if it is the computer's turn
         boolean p1Turn = game.isPlayerOneTurn();
         boolean computerTurn = (p1Turn && game.isP1Computer()) || (!p1Turn && game.isP2Computer());
         if (!computerTurn) return;
 
-        // Randomized single-shot timers so moves feel less robotic
-        final int minDelay = 400; 
-        final int maxDelay = 800; 
+        final int minDelay = 400;
+        final int maxDelay = 800;
 
         Runnable scheduleMove = new Runnable() {
             @Override
@@ -308,26 +359,14 @@ public class GameScreen extends JFrame {
                     boolean placed = game.placeMove(r, c);
                     if (!placed) return;
 
-                    // update UI
                     JButton cell = cells[r][c];
-                    String playerMove = game.getCell(r, c);
-                    cell.setText(playerMove);
-                    if ("S".equals(playerMove)) cell.setForeground(Color.BLUE);
-                    else if ("O".equals(playerMove)) cell.setForeground(Color.YELLOW);
-
-                    boolean isP1TurnNow = game.isPlayerOneTurn();
-                    turnLabel.setText(isP1TurnNow ? "Player 1 Make your Move!" : "Player 2 Make your Move!");
-                    updateScoresIfGeneral();
-                    overlay.repaint();
+                    applyMoveToUI(r, c, cell);
 
                     if (game.isOver()) {
-                        turnLabel.setText("Game Over — " + game.status());
-                        disableGrid(gridPanel);
-                        turnLabel.setFont(new Font("Lucida Console", Font.BOLD, 16));
+                        showGameOver(gridPanel);
                         return;
                     }
 
-                    // if the next turn is also a computer have another timed move
                     boolean nextP1Turn = game.isPlayerOneTurn();
                     boolean nextIsComputer = (nextP1Turn && game.isP1Computer()) || (!nextP1Turn && game.isP2Computer());
                     if (nextIsComputer) {
@@ -358,6 +397,7 @@ public class GameScreen extends JFrame {
         }
     }
 
+    // Getters
     public int getsize() { return size; }
     public String getmode() { return mode; }
 
@@ -365,7 +405,7 @@ public class GameScreen extends JFrame {
         return playerOneScoreLabel;
     }
 
-    // NEW: used by MainScreen's "Resume Last Game"
+    // used by MainScreen's "Resume Last Game"
     public void replayMoves(List<RecordedMove> moves) {
         if (moves == null || moves.isEmpty()) {
             return;
@@ -374,8 +414,8 @@ public class GameScreen extends JFrame {
         // Run on EDT to safely update UI
         SwingUtilities.invokeLater(() -> {
             for (RecordedMove m : moves) {
-                int r = m.getRow();   // adjust if your getter names differ
-                int c = m.getCol();   // adjust if your getter names differ
+                int r = m.getRow();   
+                int c = m.getCol(); 
 
                 // place move in the game model
                 boolean placed = game.placeMove(r, c);
@@ -399,16 +439,15 @@ public class GameScreen extends JFrame {
 
             // update turn label to whoever is next
             boolean p1TurnNow = game.isPlayerOneTurn();
-            turnLabel.setText(p1TurnNow ? "Player 1 Make your Move!" : "Player 2 Make your Move!");
+            isPlayerOneTurn = p1TurnNow;
+            updateTurnLabel();
 
             // redraw scored lines
             overlay.repaint();
 
             // if game already over after replay, lock the grid
             if (game.isOver()) {
-                turnLabel.setText("Game Over — " + game.status());
-                disableGrid(gridPanel);
-                turnLabel.setFont(new Font("Lucida Console", Font.BOLD, 16));
+                showGameOver(gridPanel);
             } else {
                 // if next turn belongs to a computer, let it move
                 maybeLetComputerMove(gridPanel);

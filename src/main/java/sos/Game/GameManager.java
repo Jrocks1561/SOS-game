@@ -168,7 +168,7 @@ public boolean placeMove(int r, int c) {
         return lastMade;
     }
 
-    // let the UI access the board (for SOS line drawing, if needed)
+    // let the UI access the board 
     public Board getBoard() {
         return game.board();
     }
@@ -179,14 +179,26 @@ public boolean placeMove(int r, int c) {
     }
 
     public void startRecorder(GameRecorder recorder) {
-        this.recorder = recorder;
-        moveNumber = 0;
+    this.recorder = recorder;
+    moveNumber = 0;
 
-        if (this.recorder != null) {
-            System.out.println("GM: startRecorder called – starting DB game");
-            this.recorder.startGame(size, mode);
-        }
+    if (recorder != null) {
+        // selectedDifficulty is your enum: difficulty.Easy / Medium / Hard
+        String diffName = (selectedDifficulty != null)
+                ? selectedDifficulty.name()
+                : "Easy";  // fallback if ever null
+
+        // pass all the info needed so we can resume correctly later
+        recorder.startGame(
+                size,          // board size field in this class
+                mode,          // "Simple" or "General"
+                p1IsComputer,  // whether P1 is a computer
+                p2IsComputer,  // whether P2 is a computer
+                diffName       // difficulty as a String
+        );
     }
+}
+
 
     // getters for algorithms / UI
     public boolean isP1Computer() { return p1IsComputer; }
